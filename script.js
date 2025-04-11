@@ -20,6 +20,7 @@ recognition.start();
 function onSpeak(event) {
   const msg = event.results[0][0].transcript;  // You can log the event to view the structure of the data
   console.log(msg);
+  checkNumber(msg);
 }
 
 // Speak result
@@ -117,37 +118,66 @@ function checkNumber(msg) {
   }
   // The above could (should?) be refactored to a switch case
 
-  // Check if the spoken content is a valid number
-  if (Number.isNaN(num)) {
-    const div = document.createElement('div');
-    div.textContent = 'That is not a valid number';
-    msgEl.innerHTML = '';
-    msgEl.append(div);
-    return;
+  function onSpeak(event) {
+    let msg = event.results[0][0].transcript.toLowerCase().trim();  // Normalize input
+    console.log(msg);
+  
+    writeMessage(msg);
+  
+    // Convert word to number if needed
+    const wordToNumber = {
+      one: 1, won: 1,
+      two: 2, to: 2, too: 2,
+      three: 3,
+      four: 4, for: 4,
+      five: 5,
+      six: 6,
+      seven: 7,
+      eight: 8, ate: 8,
+      nine: 9,
+      ten: 10,
+    };
+  
+    if (wordToNumber[msg]) {
+      msg = wordToNumber[msg];
+    }
+  
+    const num = Number(msg);
+  
+    // Get a fresh random number each time
+    const randomNum = getRandomNumber();
+    console.log('New number to guess:', randomNum);
+  
+    checkNumber(num, randomNum);
   }
-}
-
-const wordToNumber = {
-  one: 1,
-  won: 1,
-  two: 2,
-  to: 2,
-  too: 2,
-  three: 3,
-  four: 4,
-  for: 4,
-  five: 5,
-  six: 6,
-  seven: 7,
-  eight: 8,
-  ate: 8,
-  nine: 9,
-  ten: 10,
-};
-
-if (wordToNumber[msg]) {
-  console.log(`adjusting ${msg} to ${wordToNumber[msg]}`);
-  msg = wordToNumber[msg];
-} // Convert to number after adjustments
-
-const num = Number(msg);
+  function checkNumber(num, randomNum) {
+    if (Number.isNaN(num)) {
+      const div = document.createElement('div');
+      div.textContent = 'That is not a valid number';
+      msgEl.append(div);
+      return;
+    }
+  
+    if (num < 1 || num > 100) {
+      const div = document.createElement('div');
+      div.textContent = 'Number must be between 1 and 100';
+      msgEl.append(div);
+      return;
+    }
+  
+    if (num === randomNum) {
+      const h2 = document.createElement('h2');
+      h2.textContent = `Congrats! You guessed it! The number was ${num}`;
+      msgEl.append(h2);
+    } else if (num > randomNum) {
+      const div = document.createElement('div');
+      div.textContent = 'GO LOWER';
+      msgEl.append(div);
+    } else {
+      const div = document.createElement('div');
+      div.textContent = 'GO HIGHER';
+      msgEl.append(div);
+    }
+  }
+}  
+  
